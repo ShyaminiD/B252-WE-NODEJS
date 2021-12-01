@@ -1,11 +1,11 @@
-
-import express from 'express';
+import express from "express";
 import dotenv from "dotenv";
 dotenv.config();
 //process.env;
 
 //const express = require("express"); //importing the package express
 import { MongoClient } from "mongodb";
+import { getMovies, getMoviebyId, createMovies, deleteMoviebyId, updateMoviebyId } from "./helper.js";
 const app = express(); //create app by calling express
 const PORT = 9000;
 const MONGO_URL = process.env.MONGO_URL;
@@ -25,22 +25,23 @@ app.get("/", function (req, res) {
 app.use(express.json());
 
 async function createConnection() {
-    const client = new MongoClient(MONGO_URL);
-    await client.connect();
+  const client = new MongoClient(MONGO_URL);
+  await client.connect();
 
-    console.log("MongoDB connected!!!!")
-//db.movies.findOne({id:"103"})
-    // const movie = await client
-    //     .db("b252")
-    //     .collection("movies")
-    //     .findOne({ id: "103" })
-    //console.log(movie);
-    return client;
+  console.log("MongoDB connected!!!!");
+  //db.movies.findOne({id:"103"})
+  // const movie = await client
+  //     .db("b252")
+  //     .collection("movies")
+  //     .findOne({ id: "103" })
+  //console.log(movie);
+
+  return client;
 }
-
+export const client = await createConnection();
 //createConnection();
 // app.get("/movies", function (req, res) {
-   
+
 //   res.send(movies);
 // });
 
@@ -56,32 +57,22 @@ async function createConnection() {
 //         filterMovies = (filterMovies.filter((mv) => mv.rating === +rating));
 //     }
 //     res.send(filterMovies);
-        
 
 // });
 
 //for all the movies//
 app.get("/movies", async (request, response) => {
-  
-    console.log(request.query);
-    //const { language, rating } = request.query;
+  console.log(request.query);
+  //const { language, rating } = request.query;
   let filter = request.query;
   if (filter.rating) {
     filter.rating = +filter.rating;
   }
-    const client = await createConnection();
-    
-    const filterMovies = await client
-        .db("b252")
-        .collection("movies")
-      //.find({})
-      .find(filter)
-      .toArray();
-    //console.log(filterMovies)
+  //const client = await createConnection();
+  const filterMovies = await getMovies(filter);
+  //console.log(filterMovies)
   console.log(filter);
-    response.send(filterMovies);
-        
-
+  response.send(filterMovies);
 });
 
 // if (language) {
@@ -103,96 +94,76 @@ app.get("/movies", async (request, response) => {
 //to get particular movie -/movies/:id
 
 //app.get("/movies/:id", function (request, response) {
-  //   app.get("/movies/:id", async (request, response) => {
-  // console.log(request.params);
-  //   const { id } = request.params;
-  //  const client = await createConnection();
-  // // to get particular id movie details
-  // //const movie = movies.filter((mv) => mv.id == id);
-  // //const movie = movies.filter((mv) => mv.id == id)[0];
-  // //filter will always return an array
-  // // we can also use find
-  // //const movie = movies.find((mv) => mv.id == id);
-  //      const movie = await client.db("b252")
-  //      .collection("movies")
-  //      .findOne({ id: id });
-  // const notFound = { message: "No matching movie" };
-  // console.log(movie);
-  // movie ? response.send(movie) : response.status(404).send(notFound);
-  // //response.send(`movie details ${id}`);
-  //   });
+//   app.get("/movies/:id", async (request, response) => {
+// console.log(request.params);
+//   const { id } = request.params;
+//  const client = await createConnection();
+// // to get particular id movie details
+// //const movie = movies.filter((mv) => mv.id == id);
+// //const movie = movies.filter((mv) => mv.id == id)[0];
+// //filter will always return an array
+// // we can also use find
+// //const movie = movies.find((mv) => mv.id == id);
+//      const movie = await client.db("b252")
+//      .collection("movies")
+//      .findOne({ id: id });
+// const notFound = { message: "No matching movie" };
+// console.log(movie);
+// movie ? response.send(movie) : response.status(404).send(notFound);
+// //response.send(`movie details ${id}`);
+//   });
 
 // crud-Read
-    app.get("/movies/:id", async (request, response) => {
-      console.log(request.params);
-        const { id } = request.params;
-       const client = await createConnection();
- 
-           const movie = await client.db("b252")
-           .collection("movies")
-           .findOne({ id: id });
-      const notFound = { message: "No matching movie" };
-      console.log(movie);
-      movie ? response.send(movie) : response.status(404).send(notFound);
-     
-        });
-    
-    
+app.get("/movies/:id", async (request, response) => {
+  console.log(request.params);
+  const { id } = request.params;
+  // const client = await createConnection();
+  const movie = await getMoviebyId(id);
+  const notFound = { message: "No matching movie" };
+  console.log(movie);
+  movie ? response.send(movie) : response.status(404).send(notFound);
+});
+
 //crud-Add
 app.post("/movies", async (request, response) => {
-        //console.log(request.params);
-        const data = request.body;
-        console.log(data);
-        
-        const client = await createConnection();
-        //db.collection.InsertMany(data)
-        
-        const result = await client
-            .db("b252")
-            .collection("movies")
-            .insertMany(data);
-        app.use(express.json());
-    response.send(result);
-      });
+  //console.log(request.params);
+  const data = request.body;
+  console.log(data);
+  //const client = await createConnection();
+  //db.collection.InsertMany(data)
+  const result = await createMovies(data);
+  app.use(express.json());
+  response.send(result);
+});
 //for delete FIND and DELETE it
-
-
-
 
 //task add delete id ->103
 //edit with PUT {name:"BAahubali", rating: 9}
 //Crud-delete
 app.delete("/movies/:id", async (request, response) => {
   console.log(request.params);
-    const { id } = request.params;
-   const client = await createConnection();
- 
-       const movie = await client.db("b252")
-       .collection("movies")
-       .deleteOne({ id: id });
+  const { id } = request.params;
+  //const client = await createConnection();
+  const result = await deleteMoviebyId(id);
   const notFound = { message: "No matching movie" };
-  console.log(movie);
-  movie ? response.send(movie) : response.status(404).send(notFound);
-  
+  console.log(result);
+  result ? response.send(movie) : response.status(404).send(notFound);
 });
-    // for put we have to give date{rating:9} in body raw json of postman
+// for put we have to give date{rating:9} in body raw json of postman
 
-    //-Crud-Update
-    app.put("/movies/:id", async (request, response) => {
-      //console.log(request.params);
-      const { id } = request.params;
-      const data = request.body;
-      console.log("data", data);
-      
-      const client = await createConnection();
-      //db.collection.InsertMany(data)
-      
-      const result = await client
-          .db("b252")
-          .collection("movies")
-          .updateOne({ id: id },{ $set: data });
-     
+//-Crud-Update
+app.put("/movies/:id", async (request, response) => {
+  //console.log(request.params);
+  const { id } = request.params;
+  const data = request.body;
+  console.log("data", data);
+  // const client = await createConnection();
+  //db.collection.InsertMany(data)
+  const result = await updateMoviebyId(id, data);
+
   response.send(result);
-    });
-    
-    app.listen(PORT, () => console.log("App started on port 9000"))
+});
+
+app.listen(PORT, () => console.log("App started on port 9000"));
+
+
