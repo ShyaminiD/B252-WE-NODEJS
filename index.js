@@ -7,7 +7,9 @@ dotenv.config();
 import { MongoClient } from "mongodb";
 import { movierRouter } from "./routes/movies.js";
 const app = express(); //create app by calling express
-const PORT = 9000;
+//const PORT = 9000;
+const PORT = process.env.PORT || 9000;
+//Heroku will auto assign the port
 const MONGO_URL = process.env.MONGO_URL;
 console.log(process.env);
 
