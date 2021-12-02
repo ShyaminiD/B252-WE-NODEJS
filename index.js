@@ -1,5 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from 'cors'
+
 dotenv.config();
 //process.env;
 
@@ -25,6 +27,7 @@ app.get("/", function (req, res) {
 //get method, root path'/', second argument-call back function(req,response as arguments)
 
 app.use(express.json());
+app.use(cors());
 
 async function createConnection() {
   const client = new MongoClient(MONGO_URL);
