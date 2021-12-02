@@ -5,7 +5,7 @@ dotenv.config();
 
 //const express = require("express"); //importing the package express
 import { MongoClient } from "mongodb";
-import { getMovies, getMoviebyId, createMovies, deleteMoviebyId, updateMoviebyId } from "./helper.js";
+import { movierRouter } from "./routes/movies.js";
 const app = express(); //create app by calling express
 const PORT = 9000;
 const MONGO_URL = process.env.MONGO_URL;
@@ -61,19 +61,6 @@ export const client = await createConnection();
 // });
 
 //for all the movies//
-app.get("/movies", async (request, response) => {
-  console.log(request.query);
-  //const { language, rating } = request.query;
-  let filter = request.query;
-  if (filter.rating) {
-    filter.rating = +filter.rating;
-  }
-  //const client = await createConnection();
-  const filterMovies = await getMovies(filter);
-  //console.log(filterMovies)
-  console.log(filter);
-  response.send(filterMovies);
-});
 
 // if (language) {
 //     res.send(movies.filter((mv) => mv.language === language));
@@ -114,56 +101,17 @@ app.get("/movies", async (request, response) => {
 //   });
 
 // crud-Read
-app.get("/movies/:id", async (request, response) => {
-  console.log(request.params);
-  const { id } = request.params;
-  // const client = await createConnection();
-  const movie = await getMoviebyId(id);
-  const notFound = { message: "No matching movie" };
-  console.log(movie);
-  movie ? response.send(movie) : response.status(404).send(notFound);
-});
 
 //crud-Add
-app.post("/movies", async (request, response) => {
-  //console.log(request.params);
-  const data = request.body;
-  console.log(data);
-  //const client = await createConnection();
-  //db.collection.InsertMany(data)
-  const result = await createMovies(data);
-  app.use(express.json());
-  response.send(result);
-});
+
 //for delete FIND and DELETE it
 
 //task add delete id ->103
 //edit with PUT {name:"BAahubali", rating: 9}
 //Crud-delete
-app.delete("/movies/:id", async (request, response) => {
-  console.log(request.params);
-  const { id } = request.params;
-  //const client = await createConnection();
-  const result = await deleteMoviebyId(id);
-  const notFound = { message: "No matching movie" };
-  console.log(result);
-  result ? response.send(movie) : response.status(404).send(notFound);
-});
+
 // for put we have to give date{rating:9} in body raw json of postman
 
 //-Crud-Update
-app.put("/movies/:id", async (request, response) => {
-  //console.log(request.params);
-  const { id } = request.params;
-  const data = request.body;
-  console.log("data", data);
-  // const client = await createConnection();
-  //db.collection.InsertMany(data)
-  const result = await updateMoviebyId(id, data);
-
-  response.send(result);
-});
-
+app.use("/movies", movierRouter);
 app.listen(PORT, () => console.log("App started on port 9000"));
-
-
