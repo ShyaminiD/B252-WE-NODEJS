@@ -7,11 +7,12 @@ import {
   deleteMoviebyId,
   updateMoviebyId,
 } from "../helper.js";
+import { auth } from "../middleware/auth.js";
 
 //5x + 6x => x(5+6) since get and post have common route "/" we can chain them
 router
   .route("/")
-  .get(async (request, response) => {
+  .get(auth, async (request, response) => {
     console.log(request.query);
     //const { language, rating } = request.query;
     let filter = request.query;
@@ -37,7 +38,7 @@ router
 
 router
   .route("/:id")
-  .get(async (request, response) => {
+  .get(auth, async (request, response) => {
     console.log(request.params);
     const { id } = request.params;
     // const client = await createConnection();
@@ -46,7 +47,7 @@ router
     console.log(movie);
     movie ? response.send(movie) : response.status(404).send(notFound);
   })
-  .delete(async (request, response) => {
+  .delete(auth, async (request, response) => {
     console.log(request.params);
     const { id } = request.params;
     //const client = await createConnection();
@@ -56,7 +57,7 @@ router
     result ? response.send(movie) : response.status(404).send(notFound);
   })
 
-  .put(async (request, response) => {
+  .put(auth, async (request, response) => {
     //console.log(request.params);
     const { id } = request.params;
     const data = request.body;

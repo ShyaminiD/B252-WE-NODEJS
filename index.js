@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-import cors from 'cors'
+import cors from "cors";
 
 dotenv.config();
 //process.env;
@@ -8,12 +8,40 @@ dotenv.config();
 //const express = require("express"); //importing the package express
 import { MongoClient } from "mongodb";
 import { movierRouter } from "./routes/movies.js";
+import { usersRouter } from "./routes/users.js";
 const app = express(); //create app by calling express
 //const PORT = 9000;
 const PORT = process.env.PORT || 9000;
 //Heroku will auto assign the port
 const MONGO_URL = process.env.MONGO_URL;
 console.log(process.env);
+// const RECIPES_LIST = [
+//   {
+//     picture:
+//       "https://www.vegrecipesofindia.com/wp-content/uploads/2020/01/paneer-butter-masala-1.jpg",
+//     name: "Panner butter masala",
+//   },
+//   {
+//     picture:
+//       "https://static.toiimg.com/thumb/64696930.cms?width=1200&height=900",
+//     name: "Parotta shawarma",
+//   },
+//   {
+//     picture:
+//       "https://healthyrecipesblogs.com/wp-content/uploads/2013/02/tandoori-chicken-featured-2021.jpg",
+//     name: "Chicken tandoori",
+//   },
+//   {
+//     picture:
+//       "https://images.indulgexpress.com/uploads/user/imagelibrary/2019/8/1/original/Biryanifest.jpg",
+//     name: "Briyani",
+//   },
+//   {
+//     picture:
+//       "https://www.kannammacooks.com/wp-content/uploads/baked-gobi-manchurian-recipe-1.jpg",
+//     name: "Gobi machurian",
+//   },
+// ];
 
 //const MONGO_URL = "mongodb+srv://shyaminid:12345@cluster0.3fpc9.mongodb.net"
 //mongodb+srv://shyaminid:<password>@cluster0.3fpc9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
@@ -119,4 +147,22 @@ export const client = await createConnection();
 
 //-Crud-Update
 app.use("/movies", movierRouter);
+
+// /users/signup
+app.use("/users", usersRouter);
+//below get is not from mongodb
+// app.get("/recipes", (request, response) => {
+//   response.send(RECIPES_LIST);
+// });
+app.get("/recipes", async (request, response) => {
+  const recipes = await client.db(
+    "b252").collection("recipes").find({}).toArray()
+  
+  response.send(recipes);
+});
+app.post("/recipes", async (request, response) => {
+  const data = request.body;
+  const result = await client.db("b252").collection("recipes").insertMany(data);
+  response.send(result);
+});
 app.listen(PORT, () => console.log("App started on port 9000"));
